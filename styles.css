@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; margin: 20px; }
+.controls { margin-bottom: 20px; }
+.controls label, input, select, button { display: block; margin: 5px 0; }
+.video-container { position: relative; }
+#fps { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; padding: 5px; }
+#canvas { border: 1px solid #ccc; }

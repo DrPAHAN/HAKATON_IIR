@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Цифровой дресс-код</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- TensorFlow.js и зависимости через CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-segmentation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
+</head>
+<body>
+    <h1>Цифровой дресс-код: Фон, который выделяет вас</h1>
+    
+    <div class="controls">
+        <label>Выберите шаблон фона:</label>
+        <select id="template-select">
+            <option value="template1.png">Шаблон 1 (Корпоративный)</option>
+            <!-- Добавь больше из брендбука -->
+        </select>
+        
+        <label>Имя:</label>
+        <input type="text" id="name" value="Иван Иванов">
+        
+        <label>Должность:</label>
+        <input type="text" id="position" value="Разработчик">
+        
+        <label>Отдел:</label>
+        <input type="text" id="department" value="IT">
+        
+        <label>Показывать данные:</label>
+        <input type="checkbox" id="show-personal" checked>
+        
+        <button id="generate-bg">Сгенерировать фон</button>
+        <button id="start-cam">Запустить камеру</button>
+    </div>
+    
+    <div class="video-container">
+        <video id="video" autoplay playsinline style="display: none;"></video>
+        <canvas id="canvas" width="640" height="480"></canvas>
+        <div id="fps">FPS: 0</div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
