@@ -7,14 +7,15 @@ let backgroundImage = new Image(); // Персонализированный ф�
 let lastTime = 0;
 let fps = 0;
 let showPersonal = true;
+let employeeData = { name: "Иван Иванов", position: "Разработчик", department: "IT" }; // Данные по умолчанию
 
 // Загрузка модели Selfie Segmentation (MediaPipe runtime для скорости)
 async function loadModel() {
     const model = bodySegmentation.SupportedModels.MediaPipeSelfieSegmentation;
     const segmenterConfig = {
-        runtime: 'mediapipe', // 'tfjs' для iOS
+        runtime: 'mediapipe',
         solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation',
-        modelType: 'landscape' // 'general' для выше точности, но медленнее
+        modelType: 'landscape'
     };
     segmenter = await bodySegmentation.createSegmenter(model, segmenterConfig);
     console.log('Модель загружена');
@@ -53,25 +54,25 @@ async function processFrame(timestamp) {
         flipHorizontal: false,
         multiSegmentation: false,
         segmentBodyParts: false,
-        segmentationThreshold: 0.7 // Трешхолд для точности (0.5-0.9)
+        segmentationThreshold: 0.7
     });
     
-    // Создание маски (прозрачный для фона, непрозрачный для человека)
-    const foregroundColor = { r: 255, g: 255, b: 255, a: 255 }; // Человек
-    const backgroundColor = { r: 0, g: 0, b: 0, a: 0 }; // Фон прозрачный
+    // Создание маски
+    const foregroundColor = { r: 255, g: 255, b: 255, a: 255 };
+    const backgroundColor = { r: 0, g: 0, b: 0, a: 0 };
     const mask = await bodySegmentation.toBinaryMask(
         segmentation,
         foregroundColor,
         backgroundColor,
-        false, // Без контура
-        0.5 // Трешхолд
+        false,
+        0.5
     );
     
     // Рисуем фон
     if (backgroundImage.src) {
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     } else {
-        ctx.fillStyle = '#00ff00'; // Зеленый по умолчанию
+        ctx.fillStyle = '#00ff00';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
@@ -88,32 +89,31 @@ function generateBackground() {
     tempCanvas.height = 480;
     const tempCtx = tempCanvas.getContext('2d');
     
-    // Загрузка шаблона (из select)
+    // Загрузка шаблона
     const templatePath = document.getElementById('template-select').value;
     const templateImg = new Image();
-    templateImg.src = `templates/${templatePath}`; // Путь к шаблонам
+    templateImg.src = `templates/${templatePath}`;
     templateImg.onload = () => {
         tempCtx.drawImage(templateImg, 0, 0, tempCanvas.width, tempCanvas.height);
         
         if (showPersonal) {
-            const name = document.getElementById('name').value;
-            const position = document.getElementById('position').value;
-            const department = document.getElementById('department').value;
+            // Используем данные из JSON или полей ввода
+            const name = document.getElementById('name').value || employeeData.name;
+            const position = document.getElementById('position').value || employeeData.position;
+            const department = document.getElementById('department').value || employeeData.department;
             
-            // Рисуем текст (с контрастом: проверяем яркость фона)
+            // Рисуем текст с контрастом
             tempCtx.font = 'bold 20px Arial';
-            const textColor = getContrastColor(tempCtx); // Функция ниже
+            const textColor = getContrastColor(tempCtx);
             tempCtx.fillStyle = textColor;
             tempCtx.fillText(`${name}, ${position}, ${department}`, 20, tempCanvas.height - 20);
-            
-            // Добавь логотип, если есть (аналогично)
         }
         
-        backgroundImage.src = tempCanvas.toDataURL(); // Сохраняем как изображение
+        backgroundImage.src = tempCanvas.toDataURL();
     };
 }
 
-// Функция для контраста (простая: средняя яркость)
+// Функция для контраста
 function getContrastColor(ctx) {
     const imageData = ctx.getImageData(0, 0, 640, 480).data;
     let r = 0, g = 0, b = 0;
@@ -123,7 +123,7 @@ function getContrastColor(ctx) {
         b += imageData[i + 2];
     }
     const brightness = (r + g + b) / (imageData.length / 4 * 3);
-    return brightness > 128 ? 'black' : 'white'; // Черный на светлом, белый на темном
+    return brightness > 128 ? 'black' : 'white';
 }
 
 // События
@@ -134,11 +134,17 @@ document.getElementById('show-personal').addEventListener('change', (e) => {
     generateBackground();
 });
 
-// Загрузка данных из JSON (пример)
+// Загрузка данных из JSON и обновление полей
 fetch('employee.json')
     .then(response => response.json())
     .then(data => {
-        document.getElementById('name').value = data.name;
-        document.getElementById('position').value = data.position;
-        // Добавь отдел, если есть
+        employeeData = data; // Сохраняем данные
+        document.getElementById('name').value = data.name || employeeData.name;
+        document.getElementById('position').value = data.position || employeeData.position;
+        document.getElementById('department').value = data.department || employeeData.department;
+        generateBackground(); // Генерируем фон с данными из JSON
+    })
+    .catch(error => {
+        console.error('Ошибка загрузки JSON:', error);
+        generateBackground(); // Используем данные по умолчанию
     });
